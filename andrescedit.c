@@ -3,29 +3,43 @@
 // CS 135
 // May 7, 2024
 // Final Project
-
+#define MAXLENG 100
 #include<stdio.h>
 int menu();
-int loadImage();
+int loadImage(FILE *fp1, char userfilename[MAXLENG], int image[][MAXLENG], int *rows, int *columns);
 int editmenu();
 int savemenu();
 _Bool save();
+void displayImage(FILE *fp1, char userfilename[MAXLENG], int image[][MAXLENG], int *rows, int *columns);
 
 
 int main(){
-int menuchoice, editchoice, loadinput;
+int menuchoice, editchoice, loadimage, rows, columns;
+char userfilename[MAXLENG];
+int image[MAXLENG][MAXLENG];
+
+FILE *fp1;
 
 
 	do{menuchoice = menu();
 	switch(menuchoice){
 	case 1:
-	loadinput=loadImage();
+	loadImage(fp1, userfilename, image, &rows, &columns);
+	//displayImage= displayImage(FILE *fp1, char userfilename[MAXLENG], int image[][MAXLENG], int *rows, int *columns)
+//	printf("What is the name of the image file?");
+//	scanf("%s", userfilename);
+	
+	
+	
+	
+
 	
 	
 	
 //open file here to check for null
 	break;
 	case 2:
+	displayImage(fp1, userfilename, image, &rows, &columns);
 //open file here to check for null
 	break;
 	case 3:
@@ -95,8 +109,36 @@ int decision;
 	
 	return decision;
 }
-int loadImage(){
-	//char filename;
+int loadImage(FILE *fp1, char userfilename[MAXLENG], int image[][MAXLENG], int *rows, int *columns){
+//	char userfilename[MAXLENG];
+//	int image[MAXLENG][MAXLENG];
+//	FILE *fp1;
+//	scanf("%s", userfilename);
+	int r;
+	int c;
+	*rows=0;
+	*columns=0;
+	printf("What is the name of the image file? ");
+	scanf("%s", userfilename);
+	fp1=fopen(userfilename,"r");
+			if(fp1==NULL){
+				printf("Could not open file\n");	
+			}
+			else{
+		//		printf("Image successfully loaded!\n");
+				while(fscanf(fp1,"%d",&image[r][c])==1){
+				if(image[r][c]=='\n'){
+				*rows++;
+				}
+				else if(image[r][c]!='\n'){
+				*columns++;
+				}
+				}
+				printf("Image successfully loaded!\n");
+	//			fclose(fp1);
+			}
+			
+	//scanf("%d", userfilename);
 	//FILE *fp;
 	//printf("What is the name of the image file?");
 	//scanf(" %s", &filename);
@@ -111,6 +153,37 @@ int loadImage(){
 
 
 
+
+}
+void displayImage(FILE *fp1, char userfilename[MAXLENG], int image[][MAXLENG], int *rows, int *columns){
+	int i;
+	int j;
+	int r;
+	int c;
+	int rmax;
+	int cmax;
+	rmax=*rows;
+	cmax=*columns;
+	for(i=0; i<rmax; i++){
+		for(j=0; j<rmax; j++){
+			if(image[i][j]==0){
+				printf(" ");
+			}
+			else if(image[i][j]==1){
+				printf(".");
+			}
+			else if(image[i][j]==2){
+				printf("o");
+			}
+			else if(image[i][j]==3){
+				printf("O");
+			}
+			else if(image[i][j]>=4){
+			printf("0");
+			}
+		}
+	}
+	
 
 }
 int editmenu(){
