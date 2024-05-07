@@ -19,9 +19,14 @@ int main(){
 int menuchoice, editchoice, loadimage, rows, columns;
 char userfilename[MAXLENG];
 char imag[MAXLENG][MAXLENG];
-
+char usersavefilename[MAXLENG];
+	int cmax;
+	int rmax;
+	cmax=columns;
+	rmax=rows;
 
 FILE *fp1;
+	
 	//int lol = 48;
 	//lol = lol + 1;
 	//fp1 = fopen("bru.txt", "w");
@@ -36,6 +41,49 @@ FILE *fp1;
 	switch(menuchoice){
 	case 1:
 	loadImage(fp1, userfilename, imag, &rows, &columns);
+	
+	int left;
+	int right;
+	int top;
+	int bottom;
+	left=3;
+	right=5;
+	top=2;
+	bottom=4;
+	cmax=columns;
+	rmax=rows;
+	
+		for(int i=0; i<rmax; i++){
+		if(i>=top && i<=bottom){
+
+			for(int j=0; j<cmax; j++){
+				if(j>=left && j<=right){
+					if(imag[i][j]==48){
+						printf(" ");
+					}
+					else if(imag[i][j]==49){
+						printf(".");
+					}
+					else if(imag[i][j]==50){
+						printf("o");
+					}
+					else if(imag[i][j]==51){
+						printf("O");
+					}
+					else if(imag[i][j]>=52){
+					printf("0");
+					}
+					if(j==right){
+					printf("\n");
+					}
+					
+				}
+				//printf("\n");
+			} //printf("\n");
+		}//printf("\n");
+		}
+	
+	
 	//displayImage= displayImage(FILE *fp1, char userfilename[MAXLENG], int image[][MAXLENG], int *rows, int *columns)
 //	printf("What is the name of the image file?");
 //	scanf("%s", userfilename);
@@ -52,6 +100,7 @@ FILE *fp1;
 	break;
 	case 2:
 	displayImage(fp1, userfilename, imag, &rows, &columns);
+	
 
 //open file here to check for null
 	break;
@@ -64,6 +113,67 @@ FILE *fp1;
 		case 2:
 			//open file ('w')
 		dimImage(fp1, userfilename, imag, &rows, &columns);
+		if(savemenu()==1){
+		printf("What would you like to name your file? ");
+		scanf("%s", usersavefilename);
+			printf("\nImage saved!!\n\n");
+//PRINTING TO FILE(SAVING) DIM
+	//int lol = 48;
+	//lol = lol + 1;
+	//fp1 = fopen("bru.txt", "w");
+	//fprintf(fp1, "%c", lol);
+	
+	int cmax;
+	int rmax;
+	cmax=columns;
+	rmax=rows;
+	//fclose(fp1);
+	int fileprint;
+	fp1 = fopen(usersavefilename, "w");
+	for(int i=0; i<rmax; i++){
+	
+			for(int j=0; j<cmax; j++){
+				if(imag[i][j]==48){
+					fileprint= imag[i][j];
+					fprintf(fp1,"%c", fileprint);
+				}
+				else if(imag[i][j]==49){
+					fileprint= imag[i][j]-1;
+					fprintf(fp1,"%c", fileprint);
+				}
+				else if(imag[i][j]==50){
+					fileprint= imag[i][j]-1;
+					fprintf(fp1,"%c", fileprint);
+				}
+				else if(imag[i][j]==51){
+					fileprint= imag[i][j]-1;
+					fprintf(fp1,"%c", fileprint);
+				}
+				else if(imag[i][j]>=52){
+					fileprint= imag[i][j]-1;
+					fprintf(fp1,"%c", fileprint);
+				}
+			} fprintf(fp1,"\n");
+		}
+		fclose(fp1);
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		}
 			//for
 	//	for
 	//		fprint...
@@ -71,6 +181,67 @@ FILE *fp1;
 		break;
 		case 3:
 		brightenImage(fp1, userfilename, imag, &rows, &columns);
+		if(savemenu()==1){
+			printf("What would you like to name your file? ");
+			scanf("%s", usersavefilename);
+			printf("\nImage saved!!\n\n");
+//PRINTING TO FILE(SAVING) DIM
+	//int lol = 48;
+	//lol = lol + 1;
+	//fp1 = fopen("bru.txt", "w");
+	//fprintf(fp1, "%c", lol);
+	
+	int cmax;
+	int rmax;
+	cmax=columns;
+	rmax=rows;
+	//fclose(fp1);
+	int fileprint;
+	fp1 = fopen(usersavefilename, "w");
+	for(int i=0; i<rmax; i++){
+	
+			for(int j=0; j<cmax; j++){
+				if(imag[i][j]==48){
+					fileprint= imag[i][j]+1;
+					fprintf(fp1,"%c", fileprint);
+				}
+				else if(imag[i][j]==49){
+					fileprint= imag[i][j]+1;
+					fprintf(fp1,"%c", fileprint);
+				}
+				else if(imag[i][j]==50){
+					fileprint= imag[i][j]+1;
+					fprintf(fp1,"%c", fileprint);
+				}
+				else if(imag[i][j]==51){
+					fileprint= imag[i][j]+1;
+					fprintf(fp1,"%c", fileprint);
+				}
+				else if(imag[i][j]>=52){
+					fileprint= imag[i][j];
+					fprintf(fp1,"%c", fileprint);
+				}
+			} fprintf(fp1,"\n");
+		}
+		fclose(fp1);
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		}
 		break;
 //rotate	case 4:
 	//	break;
@@ -173,7 +344,7 @@ int loadImage(FILE *fp1, char userfilename[MAXLENG], char image1[][MAXLENG],  in
 				printf("Could not open file\n");	
 			}
 			else{
-				printf("Image successfully loaded!\n");
+				printf("\nImage successfully loaded!\n\n");
 				while(fscanf(fp1,"%c",&image1[r][c])==1){
 					if(image1[r][c]=='\n'){
 					r++;
@@ -296,13 +467,13 @@ void displayImage(FILE *fp1, char userfilename[MAXLENG], char image[][MAXLENG], 
 }
 int editmenu(){
 	int decision;
-	printf("What Edit Would You Like to Make? \n");
+	printf("\nWhat Edit Would You Like to Make? \n\n");
 	printf("1. Crop Image \n");
 	printf("2. Dim Image \n");
 	printf("3. Brighten Image \n");
 //	printf("4. Rotate Image");
 	printf("0. Exit\n");
-	printf("Choose from one of the options above: ");
+	printf("\nChoose from one of the options above: ");
 	scanf(" %d", &decision);
 
 	return decision;
