@@ -70,7 +70,7 @@ int main() {
             case 0:
                 printf("Goodbye!\n");
                 break;
-            default:
+            case -1:
                 printf("Invalid choice\n");
         }
     } while(menuchoice != 0);
@@ -316,6 +316,9 @@ int menu() {
     printf("Choose from one of the options above: ");
     scanf("%d", &decision);
 
+if (decision != 1 && decision != 2 && decision != 3 && decision != 0) {
+    decision = -1;
+}
     return decision;
 }
 
