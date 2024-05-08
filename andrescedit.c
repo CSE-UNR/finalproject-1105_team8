@@ -282,9 +282,6 @@ FILE *fp1;
 
 
 
-
-
-
 return 0;
 }
 

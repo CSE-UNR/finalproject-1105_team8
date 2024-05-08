@@ -6,22 +6,25 @@
 
 int readPixelsFromFile(char pixels[MAX_HEIGHT][MAX_WIDTH], int *finalrows, int *finalcolumns);
 void displayPixelsArray(char pixels[MAX_HEIGHT][MAX_WIDTH], int finalrows, int finalcolumns);
-void brightenImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int finalrows, int finalcolumns);
-void dimImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int finalrows, int finalcolumns);
-void saveImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int finalrows, int finalcolumns);     
-void cropImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int *finalrows, int *finalcolumns);   
-void rotateImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int *finalrows, int *finalcolumns);
+void brightenImage(char pixels[MAX_HEIGHT][MAX_WIDTH], char editedPixels[MAX_HEIGHT][MAX_WIDTH], int finalrows, int finalcolumns);
+void dimImage(char pixels[MAX_HEIGHT][MAX_WIDTH], char editedPixels[MAX_HEIGHT][MAX_WIDTH], int finalrows, int finalcolumns);
+void saveImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int *finalrows, int *finalcolumns, int initialrows, int initialcolumns);
+void cropImage(char pixels[MAX_HEIGHT][MAX_WIDTH], char editedPixels[MAX_HEIGHT][MAX_WIDTH], int *finalrows, int *finalcolumns);
+void rotateImage(char pixels[MAX_HEIGHT][MAX_WIDTH], char editedPixels[MAX_HEIGHT][MAX_WIDTH], int *finalrows, int *finalcolumns);
 int menu();
 int editmenu();
 
 int main() {
-    int menuchoice, editchoice, imagecheck = -1, finalrows = 0, finalcolumns = 0;
+    int menuchoice, editchoice, imagecheck = -1, finalrows = 0, finalcolumns = 0, initialrows = 0, initialcolumns = 0;
     char pixels[MAX_HEIGHT][MAX_WIDTH];
+    char editedPixels[MAX_HEIGHT][MAX_WIDTH]; // New array to store edited image
     do {
         menuchoice = menu();
         switch(menuchoice){
             case 1:
                 imagecheck = readPixelsFromFile(pixels, &finalrows, &finalcolumns);
+                initialrows = finalrows;
+                initialcolumns = finalcolumns;
                 break;
             case 2:
                 if (imagecheck == -1) {
@@ -31,33 +34,32 @@ int main() {
                 }
                 break;
             case 3:
-                do {
                 if (imagecheck == -1) {
                     printf("Sorry, no image to edit\n");
                     break;
-                    }
+                }
+                do {
                     editchoice = editmenu();
                     if (editchoice == 1) {
-                    displayPixelsArray(pixels, finalrows, finalcolumns);
-                        cropImage(pixels, &finalrows, &finalcolumns);
-                        displayPixelsArray(pixels, finalrows, finalcolumns);
-                        saveImage(pixels, finalrows, finalcolumns);
+                        cropImage(pixels, editedPixels, &finalrows, &finalcolumns);
+                        displayPixelsArray(editedPixels, finalrows, finalcolumns); // Display edited image
+                        saveImage(editedPixels, &finalrows, &finalcolumns, initialrows, initialcolumns); // Save edited image
+                        break; // Return to main menu after editing
                     } else if (editchoice == 2) {
-                        dimImage(pixels, finalrows, finalcolumns);
-                        displayPixelsArray(pixels, finalrows, finalcolumns);
-                        saveImage(pixels, finalrows, finalcolumns);
-                        break;
+                        dimImage(pixels, editedPixels, finalrows, finalcolumns);
+                        displayPixelsArray(editedPixels, finalrows, finalcolumns);
+                        saveImage(editedPixels, &finalrows, &finalcolumns, initialrows, initialcolumns);
+                        break; // Return to main menu after editing
                     } else if (editchoice == 3) {
-                        brightenImage(pixels, finalrows, finalcolumns);
-                        displayPixelsArray(pixels, finalrows, finalcolumns);
-                        saveImage(pixels, finalrows, finalcolumns);
-                        break;
-                        }
-                        else if (editchoice == 4) {
-                        rotateImage(pixels, &finalrows, &finalcolumns);
-                        displayPixelsArray(pixels, finalrows, finalcolumns);
-                        saveImage(pixels, finalrows, finalcolumns);
-                        break;
+                        brightenImage(pixels, editedPixels, finalrows, finalcolumns);
+                        displayPixelsArray(editedPixels, finalrows, finalcolumns);
+                        saveImage(editedPixels, &finalrows, &finalcolumns, initialrows, initialcolumns);
+                        break; // Return to main menu after editing
+                    } else if (editchoice == 4) {
+                        rotateImage(pixels, editedPixels, &finalrows, &finalcolumns);
+                        displayPixelsArray(editedPixels, finalrows, finalcolumns);
+                        saveImage(editedPixels, &finalrows, &finalcolumns, initialrows, initialcolumns);
+                        break; // Return to main menu after editing
                     } else if (editchoice == 0) {
                         printf("Returning to menu\n");
                     } else {
@@ -72,8 +74,6 @@ int main() {
                 printf("Invalid choice\n");
         }
     } while(menuchoice != 0);
-
-
 
     return 0;
 }
@@ -92,25 +92,21 @@ int readPixelsFromFile(char pixels[MAX_HEIGHT][MAX_WIDTH], int *finalrows, int *
     }
 
     int row = 0;
-    int truecolumns, columns = 0, totalpixels = 0;
-
+    int truecolumns, columns = 0, totalcolumns = 0;
+    
     while(fscanf(file, "%c", &pixels[row][columns]) == 1) {
-        if (pixels[row][columns] >= '0' && pixels[row][columns] <= '4') {
-            pixels[row][columns] = pixels[row][columns];
-            columns++;
-            totalpixels++;
-        } else if (pixels[row][columns] == '\n') {
+        if(pixels[row][columns] == '\n'){
             row++;
+            totalcolumns = columns;
             columns = 0;
+        } else {
+            columns++;
         }
     }
     *finalrows = row;
- 
-    *finalcolumns = totalpixels / row;
-    if (totalpixels % row != 0) {
-        printf("File is an incomplete image, missing pixels. Returning to menu\n");
-        imagecheck = -1;
-    } else {
+    *finalcolumns = totalcolumns;
+    
+    if (imagecheck != -1) {
         printf("Image successfully uploaded!\n");
     }
    
@@ -146,36 +142,44 @@ void displayPixelsArray(char pixels[MAX_HEIGHT][MAX_WIDTH], int finalrows, int f
     }
 }
 
-void brightenImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int finalrows, int finalcolumns) {
+void brightenImage(char pixels[MAX_HEIGHT][MAX_WIDTH], char editedPixels[MAX_HEIGHT][MAX_WIDTH], int finalrows, int finalcolumns) {
     for (int i = 0; i < finalrows; i++) {
         for (int j = 0; j < finalcolumns; j++) {
             if (pixels[i][j] >= '0' && pixels[i][j] < '4') {
-                pixels[i][j]++;
+                editedPixels[i][j] = pixels[i][j] + 1;
+            } else {
+                editedPixels[i][j] = pixels[i][j];
             }
         }
     }
 }
 
-void dimImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int finalrows, int finalcolumns) {
+void dimImage(char pixels[MAX_HEIGHT][MAX_WIDTH], char editedPixels[MAX_HEIGHT][MAX_WIDTH], int finalrows, int finalcolumns) {
     for (int i = 0; i < finalrows; i++) {
         for (int j = 0; j < finalcolumns; j++) {
             if (pixels[i][j] > '0' && pixels[i][j] <= '4') {
-                pixels[i][j]--;
+                editedPixels[i][j] = pixels[i][j] - 1;
+            } else {
+                editedPixels[i][j] = pixels[i][j];
             }
         }
     }
 }
 
-void saveImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int finalrows, int finalcolumns) {
+void saveImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int *finalrows, int *finalcolumns, int initialrows, int initialcolumns) {
     char decision;
     printf("Do you want to save the edited image? (y/n): ");
     scanf(" %c", &decision);
 
     if (decision == 'n' || decision == 'N') {
         printf("Image not saved. Returning to menu.\n");
+     *finalrows = initialrows;
+    *finalcolumns = initialcolumns;
         return;
     } else if (decision != 'y' && decision != 'Y') {
         printf("Invalid input. Image not saved. Returning to menu.\n");
+            *finalrows = initialrows;
+    *finalcolumns = initialcolumns;
         return;
     }
 
@@ -189,8 +193,8 @@ void saveImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int finalrows, int finalcolum
         return;
     }
 
-    for (int i = 0; i < finalrows; i++) {
-        for (int j = 0; j < finalcolumns; j++) {
+    for (int i = 0; i < *finalrows; i++) {
+        for (int j = 0; j < *finalcolumns; j++) {
             fprintf(file, "%c", pixels[i][j]);
         }
         fprintf(file, "\n");
@@ -198,36 +202,13 @@ void saveImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int finalrows, int finalcolum
 
     fclose(file);
     printf("Image saved successfully as %s\n", filename);
+
+    // Reset dimensions to initial values
+    *finalrows = initialrows;
+    *finalcolumns = initialcolumns;
 }
 
-int menu() {
-    int decision;
-    printf("\n ***ERINSTAGRAM***\n");
-    printf("1. Load Image\n");
-    printf("2. Display Image\n");
-    printf("3. Edit Image\n");
-    printf("0. Exit\n");
-    printf("Choose from one of the options above: \n");
-    scanf("%d", &decision);
-
-    return decision;
-}
-
-int editmenu() {
-    int decision;
-    printf("What Edit Would You Like to Make?\n");
-    printf("1. Crop Image\n");
-    printf("2. Dim Image\n");
-    printf("3. Brighten Image\n");
-    printf("4. Rotate Image\n");
-    printf("0. Exit\n");
-    printf("Choose from one of the options above: ");
-    scanf("%d", &decision);
-
-    return decision;
-}
-
-void cropImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int *finalrows, int *finalcolumns) {
+void cropImage(char pixels[MAX_HEIGHT][MAX_WIDTH], char editedPixels[MAX_HEIGHT][MAX_WIDTH], int *finalrows, int *finalcolumns) {
     int outcome, newleft, newright, newtop, newbottom;
     printf("Image Dimensions are %d x %d\n", *finalrows, *finalcolumns);
 
@@ -274,24 +255,18 @@ void cropImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int *finalrows, int *finalcol
 
     int newrows = newbottom - newtop + 1;
     int newcolumns = newright - newleft + 1;
-    char croppedImage[MAX_HEIGHT][MAX_WIDTH];
 
     for (int i = 0; i < newrows; i++) {
         for (int j = 0; j < newcolumns; j++) {
-            croppedImage[i][j] = pixels[newtop + i - 1][newleft + j - 1];
+            editedPixels[i][j] = pixels[newtop + i - 1][newleft + j - 1];
         }
     }
 
- 
     *finalrows = newrows;
     *finalcolumns = newcolumns;
-    for (int i = 0; i < newrows; i++) {
-        for (int j = 0; j < newcolumns; j++) {
-            pixels[i][j] = croppedImage[i][j];
-        }
-    }
 }
-void rotateImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int *finalrows, int *finalcolumns) {
+
+void rotateImage(char pixels[MAX_HEIGHT][MAX_WIDTH], char editedPixels[MAX_HEIGHT][MAX_WIDTH], int *finalrows, int *finalcolumns) {
     char decision;
     printf("Do you want to rotate the image clockwise or counter-clockwise? (c for clockwise, C for counter clockwise): ");
     scanf(" %c", &decision);
@@ -310,7 +285,7 @@ void rotateImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int *finalrows, int *finalc
         *finalcolumns = temp_num;
         for (i = 0; i < *finalrows; ++i) {
             for (j = 0; j < *finalcolumns; ++j) {
-                pixels[i][j] = temp[i][j];
+                editedPixels[i][j] = temp[i][j];
             }
         }
     } else if (decision == 'C') {
@@ -324,10 +299,38 @@ void rotateImage(char pixels[MAX_HEIGHT][MAX_WIDTH], int *finalrows, int *finalc
         *finalcolumns = temp_num;
         for (i = 0; i < *finalrows; ++i) {
             for (j = 0; j < *finalcolumns; ++j) {
-                pixels[i][j] = temp[i][j];
+                editedPixels[i][j] = temp[i][j];
             }
         }
     } else {
         printf("Invalid input. Image not rotated.\n");
     }
-} 
+}
+
+int menu() {
+    int decision;
+    printf("\n ***ERINSTAGRAM***\n");
+    printf("1. Load Image\n");
+    printf("2. Display Image\n");
+    printf("3. Edit Image\n");
+    printf("0. Exit\n");
+    printf("Choose from one of the options above: \n");
+    scanf("%d", &decision);
+
+    return decision;
+}
+
+int editmenu() {
+    int decision;
+    printf("What Edit Would You Like to Make?\n");
+    printf("1. Crop Image\n");
+    printf("2. Dim Image\n");
+    printf("3. Brighten Image\n");
+    printf("4. Rotate Image\n");
+    printf("0. Exit\n");
+    printf("Choose from one of the options above: ");
+    scanf("%d", &decision);
+
+    return decision;
+}
+
